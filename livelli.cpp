@@ -1,3 +1,18 @@
+#include "livelli.h"
+#include <random>
+#include <algorithm>
+#include <iostream>
+
+Livello::Livello(std::string n, std::string d, int diff) {
+    nome = n;
+    descrizione = d;
+    difficolta = diff;
+    generato = false;
+    livello_anomalia = 0.0f;
+    creaZone();
+    setModificatori();
+}
+
 void Livello::creaZone() {
     if(nome == "Level 0") {
         // The Lobby - 20 zone
@@ -166,4 +181,61 @@ void Livello::creaZone() {
             {"Deposito Ricambi", "Uscita Tecnica"}, {"Saldatore", "Strumenti"}, {"Macchinari che si riparano autonomamente"}};
     }
     generato = true;
+}
+void Livello::setModificatori() {
+    if(nome == "Level 0") {
+        modificatori_entita["Smiler"] = 1.5f;
+        modificatori_entita["Hound"] = 0.7f;
+        modificatori_entita["Bacteria"] = 1.2f;
+    }
+}
+
+float Livello::getModificatoreEntita(std::string nome_entita) {
+    return modificatori_entita[nome_entita];
+}
+
+Zona& Livello::getZona(std::string nome_zona) {
+    return mappa[nome_zona];
+}
+
+std::vector<std::string> Livello::getZoneAdiacenti(std::string zona_attuale) {
+    return mappa[zona_attuale].uscite;
+}
+
+float Livello::getModificatoreAmbientale() const {
+    return 1.0f + (livello_anomalia * 0.1f);
+}
+
+std::vector<std::string> Livello::getIndiziZona(const std::string& zona) {
+    return mappa[zona].indizi;
+}
+
+bool Livello::isZonaSicura(const std::string& zona) {
+    return mappa[zona].sicura;
+}
+
+void Livello::aggiornaStatoZona(const std::string& zona, bool sicura) {
+    mappa[zona].sicura = sicura;
+}
+
+float Livello::getLivelloAnomalia() const {
+    return livello_anomalia;
+}
+
+void Livello::aumentaAnomalia(float amount) {
+    livello_anomalia = std::min(livello_anomalia + amount, 10.0f);
+}
+
+void Livello::diminuisciAnomalia(float amount) {
+    livello_anomalia = std::max(livello_anomalia - amount, 0.0f);
+}
+
+bool Livello::isGenerato() const {
+    return generato;
+}
+
+void Livello::rigeneraZone() {
+    mappa.clear();
+    generato = false;
+    creaZone();
 }
