@@ -7,6 +7,7 @@
 #include <random>
 #include "entita.h"
 #include "livelli.h"
+#include "grafica.h"
 
 class Giocatore {
 private:
@@ -25,7 +26,7 @@ private:
 public:
     Giocatore() : salute(100), nascosto(false), livello_allerta(0), 
                   entita_identificata(false), exp(0), livello(1) {
-        posizione = "Reception Principale"; // Posizione iniziale
+        posizione = "Reception Principale";
     }
     
     // Getters
@@ -102,6 +103,7 @@ private:
     Livello* livello_corrente;
     Entita* entita_corrente;
     bool gioco_attivo;
+    SistemaGrafico grafica;
     
     std::vector<std::string> armi_disponibili = {
         "UV_TORCH - Torcia UV tattica M.E.G.",
@@ -111,72 +113,19 @@ private:
         "QUANTUM_DESTABILIZER - Destabilizzatore quantico"
     };
 
-    void gestisciMovimento() {
-        std::cout << "\nZone disponibili:\n";
-        auto zone_adiacenti = livello_corrente->getZoneAdiacenti(giocatore.getPosizione());
-        
-        for(int i = 0; i < zone_adiacenti.size(); i++) {
-            std::cout << i+1 << ". " << zone_adiacenti[i] << "\n";
-        }
-        
-        std::cout << "Scegli dove muoverti (0 per annullare): ";
-        int scelta;
-        std::cin >> scelta;
-        
-        if(scelta > 0 && scelta <= zone_adiacenti.size()) {
-            giocatore.setPosizione(zone_adiacenti[scelta-1]);
-            std::cout << "\nTi sei spostato in: " << zone_adiacenti[scelta-1] << "\n";
-        }
-    }
-
-    void gestisciRicerca() {
-        Zona& zona_attuale = livello_corrente->getZona(giocatore.getPosizione());
-        std::cout << "\nOggetti trovati:\n";
-        for(const auto& oggetto : zona_attuale.oggetti) {
-            std::cout << "- " << oggetto << "\n";
-        }
-        std::cout << "\nIndizi trovati:\n";
-        for(const auto& indizio : zona_attuale.indizi) {
-            std::cout << "- " << indizio << "\n";
-            giocatore.aggiungiIndizio(indizio);
-        }
-    }
-
-    void gestisciNascondino() {
-        giocatore.setNascosto(!giocatore.isNascosto());
-        std::cout << "\nStato nascosto: " << (giocatore.isNascosto() ? "Sì" : "No") << "\n";
-    }
-
-    void gestisciCombattimento() {
-        if(entita_corrente->isNellaZona(giocatore.getPosizione())) {
-            std::cout << "\nCombattimento con " << entita_corrente->getNome() << "!\n";
-            bool colpito = entita_corrente->reagisciAArma(giocatore.getArma());
-            if(colpito) {
-                std::cout << "Hai colpito l'entità!\n";
-                entita_corrente->danneggia(20);
-            } else {
-                std::cout << "L'entità evita l'attacco!\n";
-                giocatore.danneggia(entita_corrente->attacca());
-            }
-        } else {
-            std::cout << "\nNessuna entità presente in questa zona.\n";
-        }
-    }
-
 public:
     void inizializzaGioco() {
-        mostraIntro();
+        grafica.pulisciSchermo();
+        grafica.mostraLogo();
+        grafica.mostraCaricamento("Inizializzazione sistemi M.E.G.");
         selezionaDifficolta();
+        grafica.mostraCaricamento("Caricamento profilo agente");
         selezionaClasse();
+        grafica.mostraCaricamento("Preparazione equipaggiamento");
         selezionaEquipaggiamento();
+        grafica.mostraCaricamento("Generazione livello");
         selezionaLivello();
         gioco_attivo = true;
-    }
-
-    void mostraIntro() {
-        std::cout << "\n=== M.E.G. FIELD INVESTIGATION SYSTEM v1.0 ===\n";
-        std::cout << "Developed by Jashin L.\n";
-        std::cout << "Welcome, Agent. System initialization...\n\n";
     }
 
     void selezionaDifficolta() {
@@ -244,6 +193,8 @@ public:
     }
 
     void mostraStatoGioco() {
+        grafica.pulisciSchermo();
+        grafica.mostraMappa(livello_corrente->getNome());
         std::cout << "\n=== STATO ATTUALE ===\n";
         std::cout << "Posizione: " << giocatore.getPosizione() << "\n";
         std::cout << "Salute: " << giocatore.getSalute() << "\n";
@@ -264,10 +215,69 @@ public:
             case 2: gestisciRicerca(); break;
             case 3: gestisciNascondino(); break;
             case 4: gestisciCombattimento(); break;
-            case 5: // TODO: implementa usa oggetto
-                    break;
+            case 5: gestisciUsoOggetto(); break;
             case 6: gioco_attivo = false; break;
         }
+    }
+
+    void gestisciMovimento() {
+        std::cout << "\nZone disponibili:\n";
+        auto zone_adiacenti = livello_corrente->getZoneAdiacenti(giocatore.getPosizione());
+        
+        for(int i = 0; i < zone_adiacenti.size(); i++) {
+            std::cout << i+1 << ". " << zone_adiacenti[i] << "\n";
+        }
+        
+        std::cout << "Scegli dove muoverti (0 per annullare): ";
+        int scelta;
+        std::cin >> scelta;
+        
+        if(scelta > 0 && scelta <= zone_adiacenti.size()) {
+            grafica.animazioneMovimento();
+            giocatore.setPosizione(zone_adiacenti[scelta-1]);
+            std::cout << "\nTi sei spostato in: " << zone_adiacenti[scelta-1] << "\n";
+        }
+    }
+
+    void gestisciRicerca() {
+        grafica.animazioneRicerca();
+        Zona& zona_attuale = livello_corrente->getZona(giocatore.getPosizione());
+        std::cout << "\nOggetti trovati:\n";
+        for(const auto& oggetto : zona_attuale.oggetti) {
+            std::cout << "- " << oggetto << "\n";
+        }
+        std::cout << "\nIndizi trovati:\n";
+        for(const auto& indizio : zona_attuale.indizi) {
+            std::cout << "- " << indizio << "\n";
+            giocatore.aggiungiIndizio(indizio);
+        }
+    }
+
+    void gestisciNascondino() {
+        giocatore.setNascosto(!giocatore.isNascosto());
+        std::cout << "\nStato nascosto: " << (giocatore.isNascosto() ? "Sì" : "No") << "\n";
+    }
+
+    void gestisciCombattimento() {
+        if(entita_corrente->isNellaZona(giocatore.getPosizione())) {
+            grafica.animazioneAttacco();
+            std::cout << "\nCombattimento con " << entita_corrente->getNome() << "!\n";
+            bool colpito = entita_corrente->reagisciAArma(giocatore.getArma());
+            if(colpito) {
+                std::cout << "Hai colpito l'entità!\n";
+                entita_corrente->danneggia(20);
+            } else {
+                std::cout << "L'entità evita l'attacco!\n";
+                giocatore.danneggia(entita_corrente->attacca());
+            }
+        } else {
+            std::cout << "\nNessuna entità presente in questa zona.\n";
+        }
+    }
+
+    void gestisciUsoOggetto() {
+        // TODO: Implementare uso oggetti
+        std::cout << "\nFunzionalità non ancora implementata\n";
     }
 
     void aggiornaSituazione() {
@@ -280,7 +290,7 @@ public:
     void terminaGioco() {
         delete livello_corrente;
         delete entita_corrente;
-        std::cout << "\nGame Over\n";
+        grafica.mostraGameOver();
     }
 };
 
