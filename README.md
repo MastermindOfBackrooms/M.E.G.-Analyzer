@@ -23,6 +23,8 @@ Terminale con supporto colori ANSI
 
 git clone https://github.com/MastermindOfBackrooms/M.E.G.-Analyzer
 
+cd M.E.G.-Analyzer
+
 g++ -std=c++17 main.cpp entita.cpp livelli.cpp grafica.cpp -o meg_game
 
 ./meg_game
