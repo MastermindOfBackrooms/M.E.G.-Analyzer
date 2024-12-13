@@ -6,7 +6,8 @@
 #include <map>
 #include "entita.h"
 
-struct Zona {
+class Zona {
+public:
     std::string nome;
     std::string descrizione;
     bool esplorata;
