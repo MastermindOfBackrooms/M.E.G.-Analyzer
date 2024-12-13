@@ -91,14 +91,6 @@ public:
     void levelUp() {
         exp -= livello * 1000;
         livello++;
-        // Bonus basati sulla classe
-        switch(classe) {
-            case ANALISTA: aumentaCapacitaAnalisi(); break;
-            case COMBATTENTE: aumentaCapacitaCombattimento(); break;
-            case SOPRAVVISSUTO: aumentaResistenza(); break;
-            case TECNICO: aumentaCapacitaTecnica(); break;
-            case INFILTRATO: aumentaCapacitaStealth(); break;
-        }
     }
 };
 
@@ -107,10 +99,6 @@ private:
     Giocatore giocatore;
     Livello* livello_corrente;
     Entita* entita_corrente;
-    SistemaEsperienza exp_system;
-    SistemaTitoli titoli_system;
-    SistemaObiettivi obiettivi_system;
-    Difficolta difficolta;
     bool gioco_attivo;
     
     std::vector<std::string> armi_disponibili = {
@@ -147,7 +135,6 @@ public:
         
         int scelta;
         std::cin >> scelta;
-        difficolta = static_cast<Difficolta>(scelta - 1);
     }
 
     void selezionaClasse() {
@@ -194,17 +181,37 @@ public:
     }
 
     void loopGioco() {
-        while(gioco_attivo) {
-            mostraStatoCorrente();
+        while(gioco_attivo && giocatore.getSalute() > 0) {
+            mostraStatoGioco();
             gestisciInput();
             aggiornaSituazione();
-            verificaCondizioniFine();
         }
+        terminaGioco();
+    }
+
+    void mostraStatoGioco() {
+        std::cout << "\nPosizione: " << giocatore.getPosizione() << "\n";
+        std::cout << "Salute: " << giocatore.getSalute() << "\n";
+        std::cout << "Arma: " << giocatore.getArma() << "\n";
+    }
+
+    void gestisciInput() {
+        std::cout << "\nCosa vuoi fare?\n";
+        std::cout << "1. Muovi\n2. Cerca\n3. Nascondi\n4. Combatti\n5. Usa oggetto\n";
+        
+        int scelta;
+        std::cin >> scelta;
+        // Implementa le azioni
+    }
+
+    void aggiornaSituazione() {
+        // Aggiorna stato entità e ambiente
     }
 
     void terminaGioco() {
         delete livello_corrente;
         delete entita_corrente;
+        std::cout << "\nGame Over\n";
     }
 };
 
@@ -212,6 +219,5 @@ int main() {
     Gioco gioco;
     gioco.inizializzaGioco();
     gioco.loopGioco();
-    gioco.terminaGioco();
     return 0;
 }
