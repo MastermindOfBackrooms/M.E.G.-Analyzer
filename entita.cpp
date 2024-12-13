@@ -80,9 +80,13 @@ void Entita::rivelaPresenza() {
 std::vector<Entita> creaEntita() {
     std::vector<Entita> entita;
     
-    // Creazione delle entità con tutti i dettagli
-    [... precedente implementazione delle entità ...]
-
+    // Creazione delle entità base
+    entita.push_back(Entita("Smiler", "Entità umanoide con sorriso innaturale", 7, true, "UV_TORCH"));
+    entita.push_back(Entita("Hound", "Creatura canide con comportamenti anomali", 5, true, "MEG_TASER"));
+    entita.push_back(Entita("Bacteria", "Colonia batterica senziente", 3, true, "SOUND_CANNON"));
+    entita.push_back(Entita("Static Dancer", "Figura umanoide che si muove a scatti", 6, true, "REALITY_ANCHOR"));
+    entita.push_back(Entita("Window Walker", "Entità che si muove attraverso i riflessi", 8, true, "QUANTUM_DESTABILIZER"));
+    
     return entita;
 }
 
