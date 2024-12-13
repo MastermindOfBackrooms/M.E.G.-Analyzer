@@ -4,6 +4,24 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
+#include <algorithm>
+
+enum ClasseInvestigatore {
+    ANALISTA,
+    COMBATTENTE,
+    SOPRAVVISSUTO,
+    TECNICO,
+    INFILTRATO
+};
+
+enum Difficolta {
+    ROOKIE,
+    STANDARD,
+    VETERAN,
+    NIGHTMARE,
+    IMPOSSIBLE
+};
 
 enum Armi {
     UV_TORCH,
