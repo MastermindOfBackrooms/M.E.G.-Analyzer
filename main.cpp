@@ -24,7 +24,9 @@ private:
 
 public:
     Giocatore() : salute(100), nascosto(false), livello_allerta(0), 
-                  entita_identificata(false), exp(0), livello(1) {}
+                  entita_identificata(false), exp(0), livello(1) {
+        posizione = "Reception Principale"; // Posizione iniziale
+    }
     
     // Getters
     std::string getPosizione() const { return posizione; }
@@ -109,6 +111,58 @@ private:
         "QUANTUM_DESTABILIZER - Destabilizzatore quantico"
     };
 
+    void gestisciMovimento() {
+        std::cout << "\nZone disponibili:\n";
+        auto zone_adiacenti = livello_corrente->getZoneAdiacenti(giocatore.getPosizione());
+        
+        for(int i = 0; i < zone_adiacenti.size(); i++) {
+            std::cout << i+1 << ". " << zone_adiacenti[i] << "\n";
+        }
+        
+        std::cout << "Scegli dove muoverti (0 per annullare): ";
+        int scelta;
+        std::cin >> scelta;
+        
+        if(scelta > 0 && scelta <= zone_adiacenti.size()) {
+            giocatore.setPosizione(zone_adiacenti[scelta-1]);
+            std::cout << "\nTi sei spostato in: " << zone_adiacenti[scelta-1] << "\n";
+        }
+    }
+
+    void gestisciRicerca() {
+        Zona& zona_attuale = livello_corrente->getZona(giocatore.getPosizione());
+        std::cout << "\nOggetti trovati:\n";
+        for(const auto& oggetto : zona_attuale.oggetti) {
+            std::cout << "- " << oggetto << "\n";
+        }
+        std::cout << "\nIndizi trovati:\n";
+        for(const auto& indizio : zona_attuale.indizi) {
+            std::cout << "- " << indizio << "\n";
+            giocatore.aggiungiIndizio(indizio);
+        }
+    }
+
+    void gestisciNascondino() {
+        giocatore.setNascosto(!giocatore.isNascosto());
+        std::cout << "\nStato nascosto: " << (giocatore.isNascosto() ? "Sì" : "No") << "\n";
+    }
+
+    void gestisciCombattimento() {
+        if(entita_corrente->isNellaZona(giocatore.getPosizione())) {
+            std::cout << "\nCombattimento con " << entita_corrente->getNome() << "!\n";
+            bool colpito = entita_corrente->reagisciAArma(giocatore.getArma());
+            if(colpito) {
+                std::cout << "Hai colpito l'entità!\n";
+                entita_corrente->danneggia(20);
+            } else {
+                std::cout << "L'entità evita l'attacco!\n";
+                giocatore.danneggia(entita_corrente->attacca());
+            }
+        } else {
+            std::cout << "\nNessuna entità presente in questa zona.\n";
+        }
+    }
+
 public:
     void inizializzaGioco() {
         mostraIntro();
@@ -190,22 +244,37 @@ public:
     }
 
     void mostraStatoGioco() {
-        std::cout << "\nPosizione: " << giocatore.getPosizione() << "\n";
+        std::cout << "\n=== STATO ATTUALE ===\n";
+        std::cout << "Posizione: " << giocatore.getPosizione() << "\n";
         std::cout << "Salute: " << giocatore.getSalute() << "\n";
         std::cout << "Arma: " << giocatore.getArma() << "\n";
+        std::cout << "Nascosto: " << (giocatore.isNascosto() ? "Sì" : "No") << "\n";
+        std::cout << "==================\n";
     }
 
     void gestisciInput() {
         std::cout << "\nCosa vuoi fare?\n";
-        std::cout << "1. Muovi\n2. Cerca\n3. Nascondi\n4. Combatti\n5. Usa oggetto\n";
+        std::cout << "1. Muovi\n2. Cerca\n3. Nascondi\n4. Combatti\n5. Usa oggetto\n6. Esci\n";
         
         int scelta;
         std::cin >> scelta;
-        // Implementa le azioni
+        
+        switch(scelta) {
+            case 1: gestisciMovimento(); break;
+            case 2: gestisciRicerca(); break;
+            case 3: gestisciNascondino(); break;
+            case 4: gestisciCombattimento(); break;
+            case 5: // TODO: implementa usa oggetto
+                    break;
+            case 6: gioco_attivo = false; break;
+        }
     }
 
     void aggiornaSituazione() {
-        // Aggiorna stato entità e ambiente
+        if(entita_corrente->isNellaZona(giocatore.getPosizione()) && !giocatore.isNascosto()) {
+            std::cout << "\nATTENZIONE: " << entita_corrente->getNome() << " è presente in questa zona!\n";
+            giocatore.aumentaAllerta();
+        }
     }
 
     void terminaGioco() {
