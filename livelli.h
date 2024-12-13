@@ -32,6 +32,15 @@ private:
 
 public:
     Livello(std::string n, std::string d, int diff);
+    
+    // Getters
+    std::string getNome() const { return nome; }
+    std::string getDescrizione() const { return descrizione; }
+    int getDifficolta() const { return difficolta; }
+    float getLivelloAnomalia() const { return livello_anomalia; }
+    bool isGenerato() const { return generato; }
+    
+    // Map methods
     void creaZone();
     void setModificatori();
     float getModificatoreEntita(std::string nome_entita);
@@ -41,10 +50,10 @@ public:
     std::vector<std::string> getIndiziZona(const std::string& zona);
     bool isZonaSicura(const std::string& zona);
     void aggiornaStatoZona(const std::string& zona, bool sicura);
-    float getLivelloAnomalia() const;
+    
+    // Anomaly methods
     void aumentaAnomalia(float amount);
     void diminuisciAnomalia(float amount);
-    bool isGenerato() const;
     void rigeneraZone();
 };
 
